@@ -1,0 +1,126 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+
+// Define a Course class to store course information
+class Course {
+public:
+    std::string courseNumber;
+    std::string courseTitle;
+    std::vector<std::string> prerequisites;
+
+    // Constructor
+    Course(std::string number, std::string title, std::vector<std::string> prereqs)
+        : courseNumber(number), courseTitle(title), prerequisites(prereqs) {}
+};
+
+// Function declarations
+void loadCourses(std::vector<Course>& courses);
+void printCourseList(const std::vector<Course>& courses);
+void printCourseInfo(const std::vector<Course>& courses);
+void showMenu();
+
+int main() {
+    std::vector<Course> courses;
+    int option = 0;
+
+    do {
+        showMenu();
+        std::cin >> option;
+
+        switch (option) {
+            case 1:
+                loadCourses(courses);
+                break;
+            case 2:
+                printCourseList(courses);
+                break;
+            case 3:
+                printCourseInfo(courses);
+                break;
+            case 9:
+                std::cout << "Exiting program." << std::endl;
+                break;
+            default:
+                std::cout << "Invalid option. Please try again." << std::endl;
+        }
+    } while (option != 9);
+
+    return 0;
+}
+
+// Function to display the main menu
+void showMenu() {
+    std::cout << "Main Menu:" << std::endl;
+    std::cout << "1. Load course data" << std::endl;
+    std::cout << "2. Print course list" << std::endl;
+    std::cout << "3. Print course information" << std::endl;
+    std::cout << "9. Exit" << std::endl;
+    std::cout << "Enter your choice: ";
+}
+
+// Function to load courses from a file
+void loadCourses(std::vector<Course>& courses) {
+    std::string filename;
+    std::cout << "Enter the filename: ";
+    std::cin >> filename;
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cout << "Could not open file." << std::endl;
+        return;
+    }
+
+    std::string number, title, prereq;
+    while (file >> number >> title >> prereq) {
+        std::vector<std::string> prereqs;
+        std::istringstream iss(prereq);
+        std::string token;
+        while (iss >> token) {
+            prereqs.push_back(token);
+        }
+        courses.push_back(Course(number, title, prereqs));
+    }
+
+    file.close();
+    std::cout << "Courses loaded successfully." << std::endl;
+}
+
+// Function to print the course list
+void printCourseList(const std::vector<Course>& courses) {
+    // Sort courses alphanumerically by course number
+    std::vector<Course> sortedCourses = courses;
+    std::sort(sortedCourses.begin(), sortedCourses.end(), [](const Course& a, const Course& b) {
+        return a.courseNumber < b.courseNumber;
+    });
+
+    for (const auto& course : sortedCourses) {
+        std::cout << course.courseNumber << " - " << course.courseTitle << std::endl;
+    }
+}
+
+// Function to print course information
+void printCourseInfo(const std::vector<Course>& courses) {
+    std::string courseNumber;
+    std::cout << "Enter the course number: ";
+    std::cin >> courseNumber;
+
+    for (const auto& course : courses) {
+        if (course.courseNumber == courseNumber) {
+            std::cout << "Course Title: " << course.courseTitle << std::endl;
+            std::cout << "Prerequisites: ";
+            for (size_t i = 0; i < course.prerequisites.size(); ++i) {
+                std::cout << course.prerequisites[i];
+                if (i != course.prerequisites.size() - 1) {
+                    std::cout << ", ";
+                }
+            }
+            std::cout << std::endl;
+            return;
+        }
+    }
+
+    std::cout << "Course not found." << std::endl;
+}
